@@ -2120,60 +2120,60 @@ You may also continue as a guest. In this case your input will be processed by o
     def tmpl_orcid_box(self, orcid_data, ln, orcid_info, add_box=True, loading=True):
         _ = gettext_set_language(ln)
 
-        html_head = _(""" <span title="ORCiD (Open Researcher and Contributor ID) is a unique researcher identifier that distinguishes you from other researchers.
-It holds a record of all your research activities. You can add your ORCiD to all your works to make sure they are associated with you. ">
-        <strong> Connect this profile to an ORCiD </strong> <span>""")
+        html_head = _(""" <span title="ORCID (Open Researcher and Contributor ID) is a unique researcher identifier that distinguishes you from other researchers.
+It holds a record of all your research activities. You can add your ORCID to all your works to make sure they are associated with you. ">
+        <strong> Connect this profile to an ORCID </strong> <span>""")
         html_orcid = ""
 
         modal = ""
 
         if orcid_data['orcids']:
             html_orcid += _(
-                'This profile is already connected to the following ORCiD: <strong>%s</strong></br>' %
+                'This profile is already connected to the following ORCID: <strong>%s</strong></br><br>' %
                 (",".join(['<a rel="nofollow" href="http://www.orcid.org/' + orcidid + '"">' + orcidid + '</a>' for orcidid in orcid_data['orcids']]),))
+            if orcid_data['push']:
+                html_orcid += '<button class="btn btn-default" data-toggle="modal" data-target="#orcidPushHelp">%s</button> ' % (
+                    _("Push claimed publications to ORCID"))
+            else:
+                html_orcid += 'Your works will be pushed automatically.<br><br>'
             if orcid_data['arxiv_login'] and orcid_data['own_profile']:
-                html_orcid += '<br><div class="btn-group"><a rel="nofollow" href="%s" class="btn btn-default ' % (
-                    "%s/author/manage_profile/push_orcid_pubs" % CFG_SITE_SECURE_URL )
-                if orcid_info == 'running':
-                    html_orcid += 'disabled'
-                html_orcid +='">%s</a>' % (
-                    _("Push my claimed publications to ORCiD"))
-                html_orcid += '<button class="btn btn-primary btn-default '
-                if orcid_info == 'running' :
-                    html_orcid += 'disabled'
-                html_orcid += '" data-toggle="modal" data-target="#orcidPushHelp"><b>?</b></button></div>'
-                html_orcid += '<br><br><a rel="nofollow" href="%s" class="btn btn-default">%s</a>' % (
+                html_orcid += '<a rel="nofollow" href="%s" class="btn btn-default">%s</a>' % (
                     "%s/author/manage_profile/import_orcid_pubs" % CFG_SITE_SECURE_URL,
-                    _("Import my publications from ORCiD"))
-                modal += '<div class="modal fade" id="orcidPushHelp"> \
-                          <div class="modal-dialog"><div class="modal-content"> \
-                          <div class="modal-header"> \
-                          <h4 class="modal-title">%s</h4> \
-                          </div> \
-                          <div class="modal-body"> \
-                          <p>%s</p></div> \
-                          <div class="modal-footer"> \
-                          <button type="button" class="btn btn-default" data-dismiss="modal">%s</button> \
-                          <a rel="nofollow" href="%s" class="btn btn-primary">%s</a> \
-                          </div></div></div></div>' % (
-                            _("Pushing your claimed publication list to ORCiD"),
-                            _("By pushing your publications list to ORCiD, \
-                               we will send the details of all the papers and \
-                               datasets you have claimed as yours in INSPIRE. \
-                               Every time you perform this operation, only the \
-                               new additions will be submitted to ORCiD."),
-                            _("Go back"),
-                            "%s/author/manage_profile/push_orcid_pubs" % CFG_SITE_SECURE_URL,
-                            _("Push to ORCiD"))
+                    _("Import my publications from ORCID"))
+            modal += '<div class="modal fade" id="orcidPushHelp"> \
+                      <div class="modal-dialog"><div class="modal-content"> \
+                      <div class="modal-header"> \
+                      <h4 class="modal-title">%s</h4> \
+                      </div> \
+                      <div class="modal-body"> \
+                      <p>%s</p></div> \
+                      <div class="modal-footer"> \
+                      <button type="button" class="btn btn-default" data-dismiss="modal">%s</button> \
+                      <a rel="nofollow" href="%s" class="btn btn-primary">%s</a> \
+                      </div></div></div></div>' % (
+                        _("Pushing claimed publication list to ORCID"),
+                        _("We allow you to push your works to ORCID. \
+                           To do that, after clicking on the'Push to ORCID' button, \
+                           you will have to succesfully authorize \
+                           to the ORCID account mentioned the current page. \
+                           We will send the details of all the papers and \
+                           datasets you have claimed as yours in INSPIRE. \
+                           After doing this, if you claim any paper on INSPIRE, we \
+                           will push it to ORCID.<br><p>Please select the \
+                           'Allow this permission until I revoke it' option \
+                           in the ORCID login form.</br></p>"),
+                        _("Go back"),
+                        "%s/author/manage_profile/push_orcid_pubs" % CFG_SITE_SECURE_URL,
+                        _("Push to ORCID"))
         else:
-            html_orcid += "This profile has not been connected to an ORCiD account yet. "
+            html_orcid += "This profile has not been connected to an ORCID account yet. "
             if orcid_data['arxiv_login'] and (orcid_data['own_profile'] or orcid_data['add_power']):
                 add_link = "%s/youraccount/oauth2?provider=%s" % (CFG_SITE_URL, 'orcid')
-                add_text = _("Connect an ORCiD to this profile")
+                add_text = _("Connect an ORCID to this profile")
                 html_orcid += '<br><br><a rel="nofollow" href="%s" class="btn btn-default">%s</a>' % (
                     add_link, add_text)
             else:
-                suggest_text = _("Suggest an ORCiD for this profile:")
+                suggest_text = _("Suggest an ORCID for this profile:")
                 html_orcid += '<br><br> %s <br> <br>' % suggest_text
 
                 html_orcid += '<form class="form-inline"><div class="input-append"><input class="input-xlarge" id="suggested_orcid" type="text">'
@@ -2215,26 +2215,19 @@ You can also assign publications to other authors. This will help %s provide mor
 
         html = ''
 
-        if orcid_info == 'running':
-            html = ('<div class="alert alert-info" role="alert">%s</div>' % _('Request \
-                    for pushing ORCID data is being processed. \
-                    Your works will be available in ORCID database soon.'))
-        elif orcid_info == 'finished':
-            html = ('<div class="alert alert-success" role="alert">%s</div>' % _('Your \
+        if orcid_info == 'finished':
+            html = ('<div class="alert alert-info" role="alert">%s</div>' % _('Your \
                     request for pushing ORCID data was processed succesfully. \
-                    Your works are available in ORCID database.'))
-        elif orcid_info == 'error':
-            html = ('<div class="alert alert-danger" role="alert">%s</div>' % _('An \
-                    error occurred when INSPIRE was processing your ORCID data push \
-                    request. Our developers were informed of the issue and \
-                    will fix it.'))
+                    Works will be available in ORCID database soon. From now \
+                    on we will push your works everytime you claim a paper. \
+                    To stop this, you should revoke your token on your ORCID \
+                    profile.'))
         elif orcid_info == 'wrong_account':
             html = ('<div class="alert alert-danger" role="alert">%s</div>' % _('You \
-                    authenticated correctly to ORCID, but you are using a different \
-                    account than the one that is connected to your profile on INSPIRE. \
-                    We will not allow you push your works to a different account. \
-                    If you want to change your ORCID on your INSPIRE profile, \
-                    please contact our staff.'))
+                    authenticated correctly to ORCID, but you authenticated \
+                    to a different account that the one that is connected \
+                    to your profile on INSPIRE. We will not allow you to \
+                    push your works to a different profile.'))
 
         return html
 
@@ -2331,7 +2324,7 @@ You can also assign publications to other authors. This will help %s provide mor
             return None
 
         html_head = _("""<span title="You don’t need to add all your publications one by one.
-This list contains all your publications that were automatically assigned to your INSPIRE profile through arXiv and ORCiD. "><strong> Automatically assigned publications </strong> </span>""")
+This list contains all your publications that were automatically assigned to your INSPIRE profile through arXiv and ORCID. "><strong> Automatically assigned publications </strong> </span>""")
 
         if loading:
             if autoclaim_data['num_of_claims'] == 0:
