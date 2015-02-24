@@ -17,15 +17,18 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 """
- If 710__g contains 'for the' or 'on behalf of' check whether there is an author name.
+ If 710__g contains 'for the' or 'on behalf of'
+ check whether there is an author name.
  Split and clean collaboration.
 """
 def cleancoll(coll):
     """ Cleanup collaboration, try to find author """
     import re
     author = None
-    coll = re.sub('ON BEHALF OF ', 'FOR THE ', coll, flags=re.IGNORECASE)
-    coll = re.sub('FOR THE ', 'FOR THE ', coll, flags=re.IGNORECASE)
+    on_behalf_of = re.compile('ON BEHALF OF', re.IGNORECASE)
+    for_the = re.compile('FOR THE ', re.IGNORECASE)
+    coll = on_behalf_of.sub('FOR THE', coll)
+    coll = for_the.sub('FOR THE ', coll)
     if re.search('FOR THE ', coll) or re.search('FOR THE$', coll):
         if re.search('ASSOCIATION FOR THE', coll, flags=re.IGNORECASE) or \
             re.search('CENTER FOR THE', coll, flags=re.IGNORECASE) or \
