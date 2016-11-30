@@ -249,7 +249,7 @@ class Querystring:
         self.ascii_mode = ascii_mode
         self.formats = {}
 
-    def create_search_string(self):
+    def create_search_string(self, fixbug=False):
         """
         Assemble the found values into a proper search query
         Gather all the values from the self.fields and put them
@@ -261,6 +261,21 @@ class Querystring:
         for (field_prefix, field_reference, field_suffix), value_list in self.fields.iteritems():
             new_values = []
             for value in value_list:
+                if fixbug and '/' in value:
+                    # blindly assuming things are in the right places
+                    value = value.replace('*', '.*')
+                    if value.endswith('"'):
+                        value = value.replace('"', '')
+                    if value.endswith("'"):
+                        value = value.replace("'", '')
+                        fullstring = False
+                    else:
+                        fullstring = True
+                    value = re.sub('[^\w:, *-]', '.',  value)
+                    if fullstring:
+                        value = value.replace(':',':/^',1)+'$/'
+                    else:
+                        value = value.replace(':',':/',1)+'/'
                 new_values.append("%s%s%s" % (field_prefix, value, field_suffix))
             new_sub_query = operator_delimiter.join(set(new_values))
             if len(new_values) > 1:
@@ -313,6 +328,9 @@ class Querystring:
 
         # Now we assemble the found values into a proper search query
         self.query = self.create_search_string()
+        # Try to fix // search-bug
+        if self.query.count('/') > 1:
+            self.query = self.create_search_string(fixbug=True)
 
         if not complete:
             # Clean away any leftover field-name references from query
