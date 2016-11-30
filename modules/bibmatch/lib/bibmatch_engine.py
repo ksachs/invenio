@@ -66,6 +66,7 @@ except ImportError:
     from StringIO import StringIO
 
 re_querystring = re.compile("\s?([^\s$]*)\[(.+?)\]([^\s$]*).*?", re.DOTALL)
+operator_local = ""
 
 def usage():
     """Print help"""
@@ -123,8 +124,10 @@ def usage():
                                "o" boolean OR
 
  -c --config=filename      load querystrings from a config file. Each line starting with QRYSTR will
-                           be added as a query. i.e. QRYSTR --- [title] [author]
-
+                           be added as a query. i.e. QRYSTR---[title] [author]---
+                           QRYSTR---@[operator] overwrites operator [AND|OR] given as argument. e.g.
+                           QRYSTR---@OR
+                           
  -x --collection           only perform queries in certain collection(s).
                            Note: matching against restricted collections requires authentication.
 
@@ -305,11 +308,24 @@ class Querystring:
         @rtype: tuple
         """
 
+        global operator_local
+
         if qrystr == "":
             qrystr = "[title]"
+        if qrystr.startswith('@'):
+            #overwrite operator given as argument
+            if qrystr.strip() == '@AND':
+                operator_local = "AND"
+            elif qrystr.strip() == '@OR':
+                operator_local = 'OR'
+            self.query = ""
+            return self.query, False
         if "||" in qrystr or not "[" in qrystr:
             # Assume old style query-strings
             qrystr = self._convert_qrystr(qrystr)
+
+        if operator_local:
+            self.operator = operator_local
 
         # FIXME: Convert to lower case, since fuzzy_parser
         # which treats everything lower-case, and will cause problems when
