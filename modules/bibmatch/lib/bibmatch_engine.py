@@ -249,6 +249,26 @@ class Querystring:
         self.ascii_mode = ascii_mode
         self.formats = {}
 
+    def create_search_string(self):
+        """
+        Assemble the found values into a proper search query
+        Gather all the values from the self.fields and put them
+        in a list together with any prefix/suffix associated with the field.
+        """
+        all_queries = []
+        operator_delimiter = " %s " % (self.operator,)
+        new_query = self.pattern
+        for (field_prefix, field_reference, field_suffix), value_list in self.fields.iteritems():
+            new_values = []
+            for value in value_list:
+                new_values.append("%s%s%s" % (field_prefix, value, field_suffix))
+            new_sub_query = operator_delimiter.join(set(new_values))
+            if len(new_values) > 1:
+                new_sub_query = '(' + new_sub_query + ')'
+            new_query = new_query.replace("%s[%s]%s" % (field_prefix, field_reference, field_suffix), \
+                                          new_sub_query)
+        return new_query
+
     def create_query(self, record, qrystr="[title]"):
         """
         Main method that parses and generates a search query from
@@ -269,6 +289,7 @@ class Querystring:
         @return: (query-string, complete flag)
         @rtype: tuple
         """
+
         if qrystr == "":
             qrystr = "[title]"
         if "||" in qrystr or not "[" in qrystr:
@@ -289,43 +310,15 @@ class Querystring:
         if len(self.fields) == 0:
             self.query = ""
             return self.query, False
+
         # Now we assemble the found values into a proper search query
-        all_queries = []
-        operator_delimiter = " %s " % (self.operator,)
-        if self.operator == "AND":
-            # We gather all the values from the self.fields and put them
-            # in a list together with any prefix/suffix associated with the field.
-            new_query = self.pattern
-            for (field_prefix, field_reference, field_suffix), value_list in self.fields.iteritems():
-                new_values = []
-                for value in value_list:
-                    new_values.append("%s%s%s" % (field_prefix, value, field_suffix))
-                new_query = new_query.replace("%s[%s]%s" % (field_prefix, field_reference, field_suffix), \
-                                              operator_delimiter.join(set(new_values)))
-            all_queries = [new_query]
-        else:
-            # operator is OR, which means a more elaborate approach to multi-value fields
-            field_tuples = []
-            for key, values in self.fields.iteritems():
-                field_list = []
-                for value in values:
-                    # We add key here to be able to associate the value later
-                    field_list.append((key, value))
-                field_tuples.append(field_list)
-            # Grab all combinations of queries
-            query_tuples = cproduct(field_tuples)
-            for query in query_tuples:
-                new_query = self.pattern
-                for (field_prefix, field_reference, field_suffix), value in query:
-                    new_query = new_query.replace("%s[%s]%s" % (field_prefix, field_reference, field_suffix), \
-                                                  "%s%s%s" % (field_prefix, value, field_suffix))
-                all_queries.append(new_query)
-        # Finally we concatenate all unique queries into one, delimited by chosen operator
-        self.query = operator_delimiter.join(set(all_queries))
+        self.query = self.create_search_string()
+
         if not complete:
             # Clean away any leftover field-name references from query
             for fieldtag in fieldtags_found:
                 self.query = self.query.replace("%s" % (fieldtag,), "")
+
         # Clean query?
         if self.clean:
             self._clean_query()
